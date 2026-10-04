@@ -67,7 +67,7 @@ button { color: inherit; }
   line-height: 1;
 }
 
-.topbar-note, .footer, .underbar, .restart-button, .duration-control {
+.topbar-note, .footer, .underbar, .duration-control, .level-control, .lesson-actions {
   font-family: ui-monospace, 'SFMono-Regular', monospace;
 }
 
@@ -101,13 +101,26 @@ h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); font-weight: 600; letter-spac
 h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 500; }
 .subtitle { margin: 15px 0 0; color: #7d8982; font-size: 14px; }
 
-.test-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.test-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.toolbar-settings { display: flex; align-items: end; gap: 18px; }
+.setting-group { display: flex; align-items: center; gap: 8px; }
+.control-label { color: #839088; font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; }
+.level-control { display: flex; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, 0.72); }
+.level-option { min-width: 54px; height: 30px; padding: 0 9px; border: 0; border-radius: 3px; background: transparent; color: #87928b; cursor: pointer; font-size: 10px; }
+.level-option.active { background: #e8f0e9; color: var(--green); }
 .duration-control { display: flex; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, 0.72); }
 .duration-option { min-width: 55px; height: 30px; padding: 0 10px; border: 0; border-radius: 3px; background: transparent; color: #87928b; cursor: pointer; font-size: 11px; }
 .duration-option span { margin-left: 2px; font-size: 9px; }
 .duration-option.active { background: #e8f0e9; color: var(--green); }
-.duration-option:focus-visible, .restart-button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
-.restart-button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 2px 7px 10px; border: 0; background: transparent; color: #69766f; cursor: pointer; font-size: 11px; }
+.duration-option:focus-visible, .level-option:focus-visible, .refresh-button:focus-visible, .next-button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.lesson-actions { display: flex; align-items: center; gap: 8px; }
+.refresh-button, .next-button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 10px; }
+.refresh-button { background: rgba(255, 255, 255, 0.72); color: #56665d; }
+.refresh-button span { color: var(--green); font-family: sans-serif; font-size: 17px; }
+.next-button { border-color: var(--green); background: var(--green); color: white; }
+.next-button span { font-size: 15px; }
+.refresh-button:hover { background: #edf3ee; }
+.next-button:hover { background: #205e49; }
 .test-panel { overflow: hidden; border: 1px solid #dce4dc; border-radius: 7px; background: rgba(255, 255, 255, 0.91); box-shadow: 0 14px 40px rgba(45, 68, 54, 0.055); }
 .stats { display: flex; gap: 34px; padding: 25px 30px 19px; }
 .stat { display: flex; min-width: 66px; flex-direction: column; gap: 3px; }
@@ -119,15 +132,15 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 500; }
 .progress-track { height: 2px; background: #eef2ee; }
 .progress-track span { display: block; height: 100%; background: #6d9b78; transition: width 100ms linear; }
 
-.typing-area { position: relative; min-height: 230px; padding: 27px 30px 32px; cursor: text; }
-.passage { margin: 0; color: #b4bdb7; font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 17px; line-height: 1.9; overflow-wrap: anywhere; }
+.typing-area { position: relative; min-height: 230px; padding: 24px 30px 32px; cursor: text; }
+.typing-prompt { position: relative; z-index: 1; margin: 0 0 12px; color: var(--green); font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 12px; font-weight: 500; }
+.typing-prompt span { display: block; margin-top: 4px; color: #7d8982; font-family: 'Avenir Next', 'Segoe UI', sans-serif; font-size: 11px; font-weight: 400; }
+.passage { margin: 0; color: #b4bdb7; font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 17px; line-height: 1.9; overflow-wrap: anywhere; white-space: pre-wrap; }
 .character.correct { color: #293b32; }
 .character.incorrect { border-radius: 2px; background: #f8e7e0; color: #c45c45; }
 .character.cursor { border-left: 2px solid var(--coral); animation: blink 1s steps(2, start) infinite; }
 .typing-input { position: absolute; inset: 0; width: 100%; height: 100%; resize: none; border: 0; opacity: 0; cursor: text; }
-.typing-area:focus-within .start-hint { opacity: 0; }
-.start-hint, .finish-message { position: absolute; right: 30px; bottom: 17px; color: #9aa49d; font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 10px; pointer-events: none; }
-.finish-message { color: var(--green); }
+.finish-message { position: absolute; right: 30px; bottom: 17px; color: var(--green); font-family: ui-monospace, 'SFMono-Regular', monospace; font-size: 10px; pointer-events: none; }
 
 .underbar { display: flex; justify-content: space-between; margin-top: 14px; color: #8d9891; font-size: 10px; }
 .footer { min-height: 62px; border-top: 1px solid rgba(32, 48, 43, 0.11); color: #8b9690; font-size: 9px; }
@@ -144,10 +157,15 @@ h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 500; }
   .practice { padding: 52px 0 48px; }
   .intro { margin-bottom: 36px; }
   .subtitle { font-size: 13px; }
+  .test-toolbar { align-items: stretch; flex-direction: column; gap: 10px; }
+  .toolbar-settings { align-items: start; flex-wrap: wrap; gap: 10px 14px; }
+  .setting-group { align-items: start; flex-direction: column; gap: 5px; }
+  .level-option { min-width: 50px; }
+  .lesson-actions { justify-content: flex-end; }
   .stats { gap: 22px; padding: 21px 18px 17px; }
   .typing-area { min-height: 270px; padding: 22px 18px 30px; }
   .passage { font-size: 15px; line-height: 1.9; }
-  .start-hint, .finish-message { right: 18px; }
+  .finish-message { right: 18px; }
   .underbar { gap: 12px; font-size: 9px; }
   .keyboard-hint { display: none; }
 }
