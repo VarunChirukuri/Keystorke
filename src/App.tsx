@@ -1,16 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 
-const passage = `There is a particular kind of quiet that arrives just before the rain. The windows turn silver, the streetlights come on early, and even the busiest room seems to take a slower breath. In that small pause, ordinary things become easier to notice: a warm cup between your hands, a familiar song from another room, the steady rhythm of keys beneath your fingers. Practice works much the same way. A little attention, repeated often, turns effort into ease. Start where you are, keep a comfortable pace, and let accuracy lead. Speed tends to follow when your hands know the way.`
+type Level = 'Easy' | 'Medium' | 'Hard'
+
+const lessons: Record<Level, string[]> = {
+  Easy: [
+    'the sun is up and the day is calm. a cat sits by the window. we take a slow walk and see the green trees.',
+    'a good book can take you far. turn the page, find a new place, and let the story unfold one step at a time.',
+    'keep a steady pace. take a short break, stretch your hands, and come back when you feel ready to begin again.',
+  ],
+  Medium: [
+    'A quiet moment before the rain can change how a room feels. Notice the light, take a breath, and let your hands find an easy rhythm.',
+    'Practice works best when it becomes part of the day. A little focus, repeated often, can turn a difficult skill into a natural one.',
+    'Take your time with each sentence. Accuracy builds confidence, and confidence makes it easier to keep a steady pace.',
+  ],
+  Hard: [
+    'Precision matters: keep your eyes moving, your wrists relaxed, and your rhythm consistent. Small corrections now prevent bigger mistakes later.',
+    'At 8:45 a.m., the plan changed; the team adapted quickly, checked every detail, and finished 3 tasks before lunch.',
+    'Fast typing is not random motion. It is controlled repetition: notice the pattern, reduce wasted movement, and stay accurate under pressure!',
+  ],
+}
 
 const durations = [15, 30, 60] as const
+const levels: Level[] = ['Easy', 'Medium', 'Hard']
 
 function App() {
   const [duration, setDuration] = useState<number>(30)
+  const [level, setLevel] = useState<Level>('Medium')
+  const [lessonIndex, setLessonIndex] = useState(0)
   const [typed, setTyped] = useState('')
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [remaining, setRemaining] = useState(duration)
   const [finished, setFinished] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const passage = lessons[level][lessonIndex]
 
   useEffect(() => {
     if (startedAt === null || finished) return
@@ -23,6 +45,22 @@ function App() {
 
     return () => window.clearInterval(timer)
   }, [duration, finished, startedAt])
+
+  useEffect(() => {
+    function startFromFirstKey(event: KeyboardEvent) {
+      const target = event.target
+      const isInteractive = target instanceof HTMLElement && target.closest('button, a, input, textarea, select, [contenteditable="true"]')
+      if (startedAt !== null || finished || isInteractive || event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey) return
+
+      event.preventDefault()
+      setTyped(event.key.slice(0, passage.length))
+      setStartedAt(Date.now())
+      inputRef.current?.focus()
+    }
+
+    window.addEventListener('keydown', startFromFirstKey)
+    return () => window.removeEventListener('keydown', startFromFirstKey)
+  }, [finished, passage.length, startedAt])
 
   const correctCharacters = typed
     .split('')
@@ -39,6 +77,17 @@ function App() {
     setRemaining(nextDuration)
     setFinished(false)
     requestAnimationFrame(() => inputRef.current?.focus())
+  }
+
+  function selectLevel(nextLevel: Level) {
+    setLevel(nextLevel)
+    setLessonIndex(0)
+    reset()
+  }
+
+  function nextLesson() {
+    setLessonIndex((current) => (current + 1) % lessons[level].length)
+    reset()
   }
 
   function handleInput(value: string) {
@@ -66,22 +115,48 @@ function App() {
         </div>
 
         <div className="test-toolbar">
-          <div className="duration-control" role="group" aria-label="Test duration">
-            {durations.map((seconds) => (
-              <button
-                className={duration === seconds ? 'duration-option active' : 'duration-option'}
-                key={seconds}
-                onClick={() => reset(seconds)}
-                type="button"
-                aria-pressed={duration === seconds}
-              >
-                {seconds}<span>s</span>
-              </button>
-            ))}
+          <div className="toolbar-settings">
+            <div className="setting-group">
+              <span className="control-label">Level</span>
+              <div className="level-control" role="group" aria-label="Difficulty level">
+                {levels.map((option) => (
+                  <button
+                    className={level === option ? 'level-option active' : 'level-option'}
+                    key={option}
+                    onClick={() => selectLevel(option)}
+                    type="button"
+                    aria-pressed={level === option}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="setting-group">
+              <span className="control-label">Time</span>
+              <div className="duration-control" role="group" aria-label="Test duration">
+                {durations.map((seconds) => (
+                  <button
+                    className={duration === seconds ? 'duration-option active' : 'duration-option'}
+                    key={seconds}
+                    onClick={() => reset(seconds)}
+                    type="button"
+                    aria-pressed={duration === seconds}
+                  >
+                    {seconds}<span>s</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <button className="restart-button" onClick={() => reset()} type="button" title="Restart test">
-            Restart
-          </button>
+          <div className="lesson-actions">
+            <button className="refresh-button" onClick={() => reset()} type="button" title="Refresh this lesson">
+              <span aria-hidden="true">↻</span> Refresh
+            </button>
+            <button className="next-button" onClick={nextLesson} type="button">
+              Next lesson <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
 
         <div className="test-panel">
@@ -91,11 +166,12 @@ function App() {
             <div className="stat time-stat"><span className="stat-label">Time</span><strong>{remaining}<small>s</small></strong></div>
           </div>
 
-          <div className="progress-track" aria-label={`Passage ${Math.round(progress)} percent typed`}>
+          <div className="progress-track" role="progressbar" aria-label="Passage progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
             <span style={{ width: `${progress}%` }} />
           </div>
 
           <div className="typing-area" onClick={() => inputRef.current?.focus()}>
+            {!startedAt && <p className="typing-prompt">Type any letter to begin <span>Your first key starts the timer</span></p>}
             <p className="passage" aria-hidden="true">
               {passage.split('').map((character, index) => {
                 let characterClass = 'character'
@@ -115,7 +191,6 @@ function App() {
               spellCheck={false}
               value={typed}
             />
-            {!startedAt && <span className="start-hint">click here and start typing</span>}
             {finished && <span className="finish-message">Time. Nice work.</span>}
           </div>
         </div>
